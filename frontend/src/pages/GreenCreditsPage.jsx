@@ -95,7 +95,7 @@ const GreenCreditsPage = () => {
 
   return (
     <div>
-      <Header activeHeading={5} />
+      <Header activeHeading={6} />
 
       {/* Page Header */}
       <div className="bg-[#131921] py-10">

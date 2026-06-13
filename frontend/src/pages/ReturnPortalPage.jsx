@@ -340,6 +340,29 @@ const ReturnPortalPage = () => {
                   </div>
                 </div>
 
+                {/* Estimated Return Timeline */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+                  <h3 className="font-[600] text-[13px] text-[#131921] mb-2">📦 Return Timeline</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-[6px] bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#ff9900] rounded-full animate-pulse" style={{ width: "30%" }}></div>
+                    </div>
+                    <span className="text-[12px] font-[600] text-[#131921]">
+                      {result.estimatedReturnDays || 3} days
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#555] mt-2">
+                    {result.estimatedReturnDays === 1
+                      ? "⚡ Fast return — shipping directly to a nearby interested buyer!"
+                      : result.estimatedReturnDays <= 3
+                      ? "🚚 Standard return — product will be picked up and AI-routed"
+                      : "🔧 Extended timeline — product needs refurbishment before resale"}
+                  </p>
+                  <p className="text-[11px] text-[#00a86b] mt-1 font-[500]">
+                    💡 No warehouse trip needed — saves ₹50-200 in logistics
+                  </p>
+                </div>
+
                 {/* Powered by badge */}
                 <div className="bg-gray-50 rounded-lg p-3 mb-4 text-center">
                   <span className="text-[11px] text-gray-500">
@@ -374,6 +397,23 @@ const ReturnPortalPage = () => {
                             co2Saved: result.co2Saved?.replace(" kg", "") || "1.0",
                           });
                         }
+
+                        // If decision is resell, auto-list on refurbished marketplace
+                        if (result.decision === "Resell as Certified Refurbished" || result.decision === "Peer-to-Peer Marketplace") {
+                          await axios.post(`${server}/refurbished/list`, {
+                            name: `${productName || "Product"} - Certified Refurbished`,
+                            description: `AI-verified refurbished product. ${result.reasoning}`,
+                            category: productCategory || "Electronics",
+                            originalPrice: result.suggestedPrice ? Math.round(result.suggestedPrice * 1.4) : 5000,
+                            refurbPrice: result.suggestedPrice || 3000,
+                            conditionScore: result.conditionScore,
+                            trustScore: result.trustScore,
+                            defects: result.defects,
+                            greenCreditsReward: result.greenCreditsEarned,
+                            co2Saved: result.co2Saved,
+                          });
+                        }
+
                         toast.success("Return confirmed! Green Credits have been awarded 🌱");
                         setConfirmed(true);
                       } catch (err) {

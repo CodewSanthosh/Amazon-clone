@@ -12,6 +12,9 @@ const returnSchema = new mongoose.Schema({
   orderId: {
     type: String,
   },
+  shopId: {
+    type: String,
+  },
   productName: {
     type: String,
     required: true,
@@ -19,9 +22,16 @@ const returnSchema = new mongoose.Schema({
   productCategory: {
     type: String,
   },
+  originalPrice: {
+    type: Number,
+  },
   returnReason: {
     type: String,
     required: true,
+  },
+  estimatedReturnDays: {
+    type: Number,
+    default: 3,
   },
   images: [
     {

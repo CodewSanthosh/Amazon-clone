@@ -56,7 +56,7 @@ router.post(
   upload.array("images", 4),
   catchAsyncErrors(async (req, res, next) => {
     try {
-      const { productName, returnReason, productCategory, userId, user, orderId } = req.body;
+      const { productName, returnReason, productCategory, userId, user, orderId, shopId, originalPrice } = req.body;
 
       if (!req.files || req.files.length === 0) {
         return next(new ErrorHandler("Please upload at least one product image", 400));
@@ -130,13 +130,28 @@ Decision criteria:
       const imageUrls = req.files.map((file) => file.filename);
 
       // Create return record in database
+      // Calculate estimated return days based on decision
+      let estimatedReturnDays = 3; // default
+      if (aiResult.decision === "Resell as Certified Refurbished" || aiResult.decision === "Peer-to-Peer Marketplace") {
+        estimatedReturnDays = 1; // Fast — ship directly to nearby buyer
+      } else if (aiResult.decision === "Refurbish then Resell") {
+        estimatedReturnDays = 5; // Needs refurbishment
+      } else if (aiResult.decision === "Donate") {
+        estimatedReturnDays = 4;
+      } else {
+        estimatedReturnDays = 3;
+      }
+
       const returnRecord = await Return.create({
         userId: userId || "anonymous",
         user: user ? JSON.parse(user) : { name: "Anonymous" },
         orderId: orderId || null,
+        shopId: shopId || null,
         productName: productName || "Unknown Product",
         productCategory: productCategory || "General",
+        originalPrice: originalPrice ? Number(originalPrice) : null,
         returnReason: returnReason || "Not specified",
+        estimatedReturnDays,
         images: imageUrls,
         aiGrading: {
           conditionScore: aiResult.conditionScore,
@@ -169,6 +184,7 @@ Decision criteria:
           reasoning: aiResult.reasoning,
           greenCreditsEarned,
           co2Saved,
+          estimatedReturnDays,
         },
         returnId: returnRecord._id,
         healthCard: returnRecord.healthCard,
@@ -344,14 +360,54 @@ async function notifyInterestedUsers(productName, productCategory, returnId, con
       }
     }
 
+    // Get returner's pincode for proximity matching
+    const User = require("../model/user");
+    let returnerPincode = null;
+    if (returnerId) {
+      const returner = await User.findById(returnerId);
+      if (returner && returner.addresses && returner.addresses.length > 0) {
+        returnerPincode = returner.addresses[0].zipCode;
+      }
+    }
+
     const discount = conditionScore ? Math.round((10 - conditionScore) * 5 + 10) : 30;
 
     for (const [userId, interest] of uniqueUsers) {
+      // Check proximity: if both users have addresses, compare pincodes
+      let isNearby = false;
+      let proximityMessage = "";
+
+      if (returnerPincode) {
+        const interestedUser = await User.findById(userId);
+        if (interestedUser && interestedUser.addresses && interestedUser.addresses.length > 0) {
+          const userPincode = interestedUser.addresses[0].zipCode;
+          if (userPincode && returnerPincode) {
+            // Same pincode = same area
+            // First 3 digits match = same city/district (Indian pincode logic)
+            const returnerPrefix = String(returnerPincode).substring(0, 3);
+            const userPrefix = String(userPincode).substring(0, 3);
+
+            if (String(userPincode) === String(returnerPincode)) {
+              isNearby = true;
+              proximityMessage = "Same area! Ships within hours.";
+            } else if (returnerPrefix === userPrefix) {
+              isNearby = true;
+              proximityMessage = "Same city! Ships by tomorrow.";
+            }
+          }
+        }
+      }
+
+      // All interested users get notified, but nearby users get priority messaging
+      const nearbyTag = isNearby ? `📍 ${proximityMessage} ` : "";
+
       await Notification.create({
         userId,
         type: "return_nearby",
-        title: "🔔 Product you liked is now available nearby!",
-        message: `"${productName}" was just returned in ${conditionScore}/10 condition. Get it at ${discount}% off — ships faster since it's nearby!`,
+        title: isNearby
+          ? "📍 Nearby product alert — skip the warehouse!"
+          : "🔔 Product you liked is now available!",
+        message: `${nearbyTag}"${productName}" was just returned in ${conditionScore}/10 condition. Get it at ${discount}% off${isNearby ? " — direct delivery from nearby, saves shipping & CO₂!" : "!"}`,
         productName,
         returnId,
         discount,
@@ -361,7 +417,7 @@ async function notifyInterestedUsers(productName, productCategory, returnId, con
       });
     }
 
-    console.log(`[Notify] ${uniqueUsers.size} users notified about return of "${productName}"`);
+    console.log(`[Notify] ${uniqueUsers.size} users notified about return of "${productName}" (returner pincode: ${returnerPincode || "N/A"})`);
   } catch (err) {
     console.log("[Notify] Error:", err.message);
   }

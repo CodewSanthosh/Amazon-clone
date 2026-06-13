@@ -109,7 +109,7 @@ const P2PMarketplacePage = () => {
 
   return (
     <div>
-      <Header activeHeading={2} />
+      <Header activeHeading={5} />
 
       {/* Page Header */}
       <div className="bg-gradient-to-r from-[#232f3e] to-[#131921] py-8">

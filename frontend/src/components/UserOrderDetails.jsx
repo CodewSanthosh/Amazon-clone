@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { backend_url, server } from "../server";
+import { getImageUrl } from "../utils/imageUrl";
 import { RxCross1 } from "react-icons/rx";
 import { getAllOrdersOfUser } from "../redux/actions/order";
 import { useDispatch, useSelector } from "react-redux";
@@ -105,7 +106,7 @@ const UserOrderDetails = () => {
           return (
             <div className="w-full flex items-start mb-5">
               <img
-                src={`${backend_url}/${item.images[0]}`}
+                src={getImageUrl(item?.images?.[0])}
                 alt="Product item order img"
                 className="w-[80x] h-[80px]"
               />
@@ -144,7 +145,7 @@ const UserOrderDetails = () => {
             <br />
             <div className="w-full flex">
               <img
-                src={`${backend_url}/${selectedItem?.images[0]}`}
+                src={getImageUrl(selectedItem?.images?.[0])}
                 alt=""
                 className="w-[80px] h-[80px]"
               />
@@ -249,11 +250,21 @@ const UserOrderDetails = () => {
           </h4>
           <br />
           {data?.status === "Delivered" && (
-            <div
-              className={`${styles.button} text-white`}
-              onClick={refundHandler}
-            >
-              Give a Refund
+            <div className="space-y-2">
+              <Link to="/return-portal">
+                <div className="w-full h-[38px] bg-gradient-to-b from-[#f7dfa5] to-[#f0c14b] border border-[#a88734] rounded-[4px] text-[13px] font-[500] text-[#131921] flex items-center justify-center gap-2 cursor-pointer hover:from-[#f5d78e] hover:to-[#eeb933]">
+                  ♻️ Return via AI Portal — Earn Green Credits
+                </div>
+              </Link>
+              <div
+                className="w-full h-[34px] bg-gradient-to-b from-[#f7f8fa] to-[#e7e9ec] border border-[#adb1b8] rounded-[4px] text-[12px] text-[#111] flex items-center justify-center cursor-pointer hover:from-[#e7eaf0] hover:to-[#d9dce1]"
+                onClick={refundHandler}
+              >
+                Request Standard Refund
+              </div>
+              <p className="text-[11px] text-[#4caf50]">
+                💡 Use AI Return Portal to get Green Credits & help the planet!
+              </p>
             </div>
           )}
         </div>
@@ -270,3 +281,4 @@ const UserOrderDetails = () => {
 };
 
 export default UserOrderDetails;
+
