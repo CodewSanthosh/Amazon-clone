@@ -32,23 +32,40 @@ const RefurbishedPage = () => {
     }
   };
 
-  const handlePurchase = async (productId) => {
+  const handlePurchase = async (product) => {
     if (!isAuthenticated) {
       toast.error("Please login to purchase");
       return;
     }
-    try {
-      const res = await axios.post(`${server}/refurbished/purchase`, {
-        productId,
-        userId: user._id,
-      });
-      if (res.data.success) {
-        toast.success(`🎉 Purchased! +${res.data.creditsEarned} Green Credits earned`);
-        fetchProducts(); // Refresh list
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Purchase failed");
+    // Add to cart like a normal product and go through checkout
+    const cartData = {
+      _id: product._id,
+      name: product.name,
+      description: product.description,
+      category: product.category,
+      originalPrice: product.originalPrice,
+      discountPrice: product.refurbPrice,
+      stock: 1,
+      images: product.images,
+      qty: 1,
+      shopId: product.sellerId || "refurbished_store",
+      shop: { name: "Amazon Refurbished", avatar: "default-avatar.png" },
+      isRefurbished: true,
+      greenCreditsReward: product.greenCreditsReward,
+    };
+
+    // Check if already in cart
+    const existingCart = JSON.parse(localStorage.getItem("cartItems")) || [];
+    const exists = existingCart.find((i) => i._id === product._id);
+    if (exists) {
+      toast.error("Already in cart!");
+      return;
     }
+
+    existingCart.push(cartData);
+    localStorage.setItem("cartItems", JSON.stringify(existingCart));
+    toast.success(`Added to cart! +${product.greenCreditsReward} Green Credits at checkout 🌱`);
+    window.location.reload();
   };
 
   const seedProducts = async () => {
@@ -203,10 +220,10 @@ const RefurbishedPage = () => {
 
                   {/* CTA */}
                   <button
-                    onClick={() => handlePurchase(product._id)}
+                    onClick={() => handlePurchase(product)}
                     className="w-full mt-3 bg-[#ff9900] hover:bg-[#e68a00] text-[#131921] font-semibold py-2 rounded-md text-[13px] transition"
                   >
-                    Buy Now — Earn {product.greenCreditsReward} 🌱
+                    Add to Cart — Earn {product.greenCreditsReward} 🌱
                   </button>
                 </div>
               </div>
