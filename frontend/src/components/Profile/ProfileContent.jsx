@@ -208,7 +208,6 @@ const ProfileContent = ({ active }) => {
 // All orders
 const AllOrders = () => {
     const { user } = useSelector((state) => state.user);
-
     const { orders } = useSelector((state) => state.order);
     const dispatch = useDispatch();
 
@@ -216,86 +215,60 @@ const AllOrders = () => {
         dispatch(getAllOrdersOfUser(user._id));
     }, []);
 
-
-
-
-    const columns = [
-        { field: "id", headerName: "Order ID", minWidth: 150, flex: 0.7 },
-
-        {
-            field: "status",
-            headerName: "Status",
-            minWidth: 130,
-            flex: 0.7,
-            cellClassName: (params) => {
-                return params.getValue(params.id, "status") === "Delivered"
-                    ? "greenColor"
-                    : "redColor";
-            },
-        },
-        {
-            field: "itemsQty",
-            headerName: "Items Qty",
-            type: "number",
-            minWidth: 130,
-            flex: 0.7,
-        },
-
-        {
-            field: "total",
-            headerName: "Total",
-            type: "number",
-            minWidth: 130,
-            flex: 0.8,
-        },
-
-        {
-            field: " ",
-            flex: 1,
-            minWidth: 150,
-            headerName: "",
-            type: "number",
-            sortable: false,
-            renderCell: (params) => {
-                return (
-                    <>
-                        <Link to={`/user/order/${params.id}`}>
-                            <Button>
-                                <AiOutlineArrowRight size={20} />
-                            </Button>
-                        </Link>
-                    </>
-                );
-            },
-        },
-    ];
-
-    const row = [];
-
-    orders &&
-        orders.forEach((item) => {
-            row.push({
-                id: item._id,
-                itemsQty: item.cart.length,
-                total: "US$ " + item.totalPrice,
-                status: item.status,
-            });
-        });
-
-
     return (
-        <>
-            <div className='pl-8 pt-1'>
-                <DataGrid
-                    rows={row}
-                    columns={columns}
-                    pageSize={10}
-                    disableSelectionOnClick
-                    autoHeight
-                />
-
-            </div>
-        </>
+        <div>
+            <h2 className="text-[18px] font-[600] text-[#131921] mb-4">Your Orders</h2>
+            {!orders || orders.length === 0 ? (
+                <div className="text-center py-10">
+                    <span className="text-[40px]">📦</span>
+                    <p className="text-[14px] text-[#555] mt-2">No orders yet</p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {orders.map((order) => (
+                        <div key={order._id} className="border border-[#e7e7e7] rounded-lg overflow-hidden">
+                            <div className="bg-[#f7f7f7] px-4 py-3 flex items-center justify-between border-b border-[#e7e7e7] flex-wrap gap-2">
+                                <div className="flex gap-6 text-[12px]">
+                                    <div>
+                                        <span className="text-[#555] uppercase">Order Placed</span>
+                                        <p className="text-[#0f1111] font-[500]">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-[#555] uppercase">Total</span>
+                                        <p className="text-[#0f1111] font-[500]">₹{order.totalPrice?.toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-[#555] uppercase">Status</span>
+                                        <p className={`font-[600] ${order.status === "Delivered" ? "text-[#007600]" : "text-[#c45500]"}`}>{order.status}</p>
+                                    </div>
+                                </div>
+                                <span className="text-[11px] text-[#555]">#{order._id?.slice(0, 12)}...</span>
+                            </div>
+                            <div className="p-4">
+                                {order.cart.map((item, i) => (
+                                    <div key={i} className="flex items-center gap-4 mb-3 last:mb-0">
+                                        <img
+                                            src={item.images?.[0]?.startsWith("http") ? item.images[0] : `${backend_url}${item.images?.[0]}`}
+                                            alt={item.name}
+                                            className="w-[65px] h-[65px] object-contain rounded border border-[#e7e7e7] p-1 bg-white"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-[13px] text-[#0f1111] line-clamp-1">{item.name}</h4>
+                                            <p className="text-[12px] text-[#555]">Qty: {item.qty} • ₹{item.discountPrice?.toLocaleString()}</p>
+                                        </div>
+                                        <Link to={`/user/order/${order._id}`}>
+                                            <button className="h-[30px] px-4 bg-gradient-to-b from-[#f7f8fa] to-[#e7e9ec] border border-[#adb1b8] rounded-[4px] text-[11px] font-[500] text-[#0f1111] hover:from-[#e7eaf0] hover:to-[#d9dce1]">
+                                                View Details
+                                            </button>
+                                        </Link>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
     )
 }
 

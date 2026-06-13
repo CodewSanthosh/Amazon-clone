@@ -24,6 +24,7 @@ import {
   UserInbox,
 } from "./routes/Routes";
 import RefurbishedPage from "./pages/RefurbishedPage";
+import RefurbishedProductDetailsPage from "./pages/RefurbishedProductDetailsPage";
 import ReturnPortalPage from "./pages/ReturnPortalPage";
 import GreenCreditsPage from "./pages/GreenCreditsPage";
 import P2PMarketplacePage from "./pages/P2PMarketplacePage";
@@ -116,6 +117,7 @@ const App = () => {
         <Route path="/events" element={<EventsPage />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/refurbished" element={<RefurbishedPage />} />
+        <Route path="/refurbished/:id" element={<RefurbishedProductDetailsPage />} />
         <Route path="/return-portal" element={<ReturnPortalPage />} />
         <Route path="/green-credits" element={<GreenCreditsPage />} />
         <Route path="/p2p-marketplace" element={<P2PMarketplacePage />} />

@@ -6,6 +6,7 @@ import { server } from "../server";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 const RefurbishedPage = () => {
   const [products, setProducts] = useState([]);
@@ -158,7 +159,8 @@ const RefurbishedPage = () => {
                 className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all"
               >
                 {/* Badge */}
-                <div className="relative">
+                <Link to={`/refurbished/${product._id}`}>
+                <div className="relative cursor-pointer">
                   <img
                     src={product.images?.[0] || "https://via.placeholder.com/300x200"}
                     alt={product.name}
@@ -171,11 +173,14 @@ const RefurbishedPage = () => {
                     {product.conditionScore}/10
                   </span>
                 </div>
+                </Link>
 
                 <div className="p-4">
-                  <h3 className="font-[600] text-[14px] text-[#131921] mb-2 line-clamp-2">
+                  <Link to={`/refurbished/${product._id}`}>
+                  <h3 className="font-[600] text-[14px] text-[#131921] mb-2 line-clamp-2 hover:text-[#c45500] cursor-pointer">
                     {product.name}
                   </h3>
+                  </Link>
 
                   {/* Price */}
                   <div className="flex items-center gap-2 mb-2">
