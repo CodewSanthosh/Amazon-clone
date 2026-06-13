@@ -3,6 +3,8 @@ const router = express.Router();
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const ErrorHandler = require("../utils/ErrorHandler");
 const Return = require("../model/return");
+const Notification = require("../model/notification");
+const ProductInterest = require("../model/productInterest");
 const { upload } = require("../multer");
 const fs = require("fs");
 const path = require("path");
@@ -171,6 +173,16 @@ Decision criteria:
         returnId: returnRecord._id,
         healthCard: returnRecord.healthCard,
       });
+
+      // Async: Notify interested users about this return (non-blocking)
+      notifyInterestedUsers(
+        productName || "Product",
+        productCategory || "",
+        returnRecord._id.toString(),
+        aiResult.conditionScore,
+        aiResult.suggestedPrice,
+        userId
+      ).catch((err) => console.log("Notification error (non-blocking):", err.message));
     } catch (error) {
       // Clean up uploaded files on error
       if (req.files) {
@@ -310,5 +322,49 @@ router.put(
     }
   })
 );
+
+// Helper: Notify users who showed interest in a returned product
+async function notifyInterestedUsers(productName, productCategory, returnId, conditionScore, suggestedPrice, returnerId) {
+  try {
+    const keywords = productName.split(" ").filter((w) => w.length > 3).slice(0, 3);
+    if (keywords.length === 0) return;
+
+    const searchRegex = keywords.map((k) => `(?=.*${k})`).join("");
+
+    const interestedUsers = await ProductInterest.find({
+      productName: { $regex: searchRegex, $options: "i" },
+      userId: { $ne: returnerId || "" },
+    });
+
+    // De-duplicate by userId
+    const uniqueUsers = new Map();
+    for (const interest of interestedUsers) {
+      if (!uniqueUsers.has(interest.userId)) {
+        uniqueUsers.set(interest.userId, interest);
+      }
+    }
+
+    const discount = conditionScore ? Math.round((10 - conditionScore) * 5 + 10) : 30;
+
+    for (const [userId, interest] of uniqueUsers) {
+      await Notification.create({
+        userId,
+        type: "return_nearby",
+        title: "🔔 Product you liked is now available nearby!",
+        message: `"${productName}" was just returned in ${conditionScore}/10 condition. Get it at ${discount}% off — ships faster since it's nearby!`,
+        productName,
+        returnId,
+        discount,
+        offerPrice: suggestedPrice || null,
+        actionUrl: "/refurbished",
+        expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000),
+      });
+    }
+
+    console.log(`[Notify] ${uniqueUsers.size} users notified about return of "${productName}"`);
+  } catch (err) {
+    console.log("[Notify] Error:", err.message);
+  }
+}
 
 module.exports = router;

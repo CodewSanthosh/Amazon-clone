@@ -17,6 +17,7 @@ import { useSelector } from "react-redux";
 import { backend_url } from "../../server";
 import Cart from "../cart/Cart";
 import Wishlist from "../Wishlist/Wishlist";
+import NotificationBell from "./NotificationBell";
 import { RxCross1 } from "react-icons/rx";
 
 const Header = ({ activeHeading }) => {
@@ -157,7 +158,12 @@ const Header = ({ activeHeading }) => {
           </div>
 
           {/* Icons */}
-          <div className="flex">
+          <div className="flex items-center">
+            {/* Notification Bell */}
+            <div className={`${styles.noramlFlex} mr-[10px]`}>
+              <NotificationBell />
+            </div>
+
             <div className={`${styles.noramlFlex}`}>
               <div
                 className="relative cursor-pointer mr-[15px]"

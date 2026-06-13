@@ -9,8 +9,9 @@ Requires: pip install pymongo
 from pymongo import MongoClient
 import sys
 
-# MongoDB connection
-MONGO_URI = "mongodb+srv://surendiran2510_db_user:l2VbR5c5uYlPo2Fo@hackon.rkxojwo.mongodb.net/relife?retryWrites=true&w=majority&appName=Hackon"
+# MongoDB connection — load from environment variable or .env file
+import os
+MONGO_URI = os.environ.get("DB_URL", "mongodb://localhost:27017/relife")
 
 # Better product images (all from Amazon CDN - publicly accessible)
 PRODUCT_IMAGES = {

@@ -72,12 +72,14 @@ const greenCredits = require("./controller/greenCredits");
 const refurbished = require("./controller/refurbished");
 const seed = require("./controller/seed");
 const p2p = require("./controller/p2p");
+const notifications = require("./controller/notifications");
 app.use("/api/v2/withdraw", withdraw);
 app.use("/api/v2/ai", ai);
 app.use("/api/v2/green-credits", greenCredits);
 app.use("/api/v2/refurbished", refurbished);
 app.use("/api/v2/seed", seed);
 app.use("/api/v2/p2p", p2p);
+app.use("/api/v2/notifications", notifications);
 
 // end points
 app.use("/api/v2/user", user);

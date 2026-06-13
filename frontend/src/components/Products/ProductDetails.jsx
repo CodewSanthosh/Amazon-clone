@@ -39,6 +39,18 @@ const ProductDetails = ({ data }) => {
     } else {
       setClick(false);
     }
+
+    // Track product view for return notification system
+    if (data && isAuthenticated && user) {
+      axios.post(`${server}/notifications/track-interest`, {
+        userId: user._id,
+        userName: user.name,
+        productId: data._id,
+        productName: data.name,
+        productCategory: data.category,
+        interactionType: "viewed",
+      }).catch(() => {});
+    }
   }, [data, wishlist]);
 
   // Remove from wish list
@@ -51,6 +63,17 @@ const ProductDetails = ({ data }) => {
   const addToWishlistHandler = (data) => {
     setClick(!click);
     dispatch(addToWishlist(data));
+    // Track wishlist interest
+    if (isAuthenticated && user) {
+      axios.post(`${server}/notifications/track-interest`, {
+        userId: user._id,
+        userName: user.name,
+        productId: data._id,
+        productName: data.name,
+        productCategory: data.category,
+        interactionType: "wishlisted",
+      }).catch(() => {});
+    }
   };
 
   // Add to cart
@@ -66,6 +89,17 @@ const ProductDetails = ({ data }) => {
         const cartData = { ...data, qty: count };
         dispatch(addTocart(cartData));
         toast.success("Item added to cart Successfully!");
+        // Track cart interest
+        if (isAuthenticated && user) {
+          axios.post(`${server}/notifications/track-interest`, {
+            userId: user._id,
+            userName: user.name,
+            productId: data._id,
+            productName: data.name,
+            productCategory: data.category,
+            interactionType: "carted",
+          }).catch(() => {});
+        }
       }
     }
   };
