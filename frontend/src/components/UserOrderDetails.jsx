@@ -251,7 +251,7 @@ const UserOrderDetails = () => {
           <br />
           {data?.status === "Delivered" && (
             <div className="space-y-2">
-              <Link to="/return-portal">
+              <Link to={`/return-portal?productName=${encodeURIComponent(data?.cart?.[0]?.name || "")}&category=${encodeURIComponent(data?.cart?.[0]?.category || "")}&orderId=${data?._id}&shopId=${data?.cart?.[0]?.shopId || ""}`}>
                 <div className="w-full h-[38px] bg-gradient-to-b from-[#f7dfa5] to-[#f0c14b] border border-[#a88734] rounded-[4px] text-[13px] font-[500] text-[#131921] flex items-center justify-center gap-2 cursor-pointer hover:from-[#f5d78e] hover:to-[#eeb933]">
                   ♻️ Return via AI Portal — Earn Green Credits
                 </div>

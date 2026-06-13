@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../components/Layout/Header";
 import Footer from "../components/Layout/Footer";
 import styles from "../styles/styles";
@@ -6,8 +6,10 @@ import { server } from "../server";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { useSearchParams } from "react-router-dom";
 
 const ReturnPortalPage = () => {
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
@@ -21,6 +23,14 @@ const ReturnPortalPage = () => {
   const [confirming, setConfirming] = useState(false);
 
   const { user, isAuthenticated } = useSelector((state) => state.user);
+
+  // Auto-fill from URL params (when coming from Order Details page)
+  useEffect(() => {
+    const name = searchParams.get("productName");
+    const category = searchParams.get("category");
+    if (name) setProductName(decodeURIComponent(name));
+    if (category) setProductCategory(decodeURIComponent(category));
+  }, [searchParams]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -46,6 +56,12 @@ const ReturnPortalPage = () => {
         formData.append("userId", user._id);
         formData.append("user", JSON.stringify({ name: user.name, email: user.email }));
       }
+
+      // Pass order context if coming from order details
+      const orderId = searchParams.get("orderId");
+      const shopId = searchParams.get("shopId");
+      if (orderId) formData.append("orderId", orderId);
+      if (shopId) formData.append("shopId", shopId);
 
       const response = await axios.post(`${server}/ai/grade-product`, formData, {
         headers: {
