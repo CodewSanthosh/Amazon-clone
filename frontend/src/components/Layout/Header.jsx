@@ -90,7 +90,13 @@ const Header = ({ activeHeading }) => {
                     <Link to={`/product/${i._id}`} key={index}>
                       <div className="w-full flex items-center py-2 hover:bg-gray-50 px-2 rounded">
                         <img
-                          src={`${backend_url}${i.images[0]}`}
+                          src={
+                            i.images && i.images[0]
+                              ? i.images[0].startsWith("http")
+                                ? i.images[0]
+                                : `${backend_url}${i.images[0]}`
+                              : "https://via.placeholder.com/40"
+                          }
                           alt=""
                           className="w-[40px] h-[40px] mr-[10px] object-contain"
                         />
@@ -136,27 +142,13 @@ const Header = ({ activeHeading }) => {
         <div
           className={`${styles.section} relative ${styles.noramlFlex} justify-between`}
         >
-          {/* Categories */}
-          <div onClick={() => setDropDown(!dropDown)}>
-            <div className="relative h-[40px] mt-[5px] w-[230px] hidden 1000px:block">
-              <BiMenuAltLeft size={24} className="absolute top-2 left-2 text-white" />
-              <button
-                className="h-[100%] w-full flex justify-between items-center pl-10 bg-[#37475a] text-white font-sans text-[14px] font-[500] select-none rounded"
-              >
-                All Categories
-              </button>
-              <IoIosArrowDown
-                size={18}
-                className="absolute right-2 top-3 cursor-pointer text-white"
-                onClick={() => setDropDown(!dropDown)}
-              />
-              {dropDown ? (
-                <DropDown
-                  categoriesData={categoriesData}
-                  setDropDown={setDropDown}
-                />
-              ) : null}
-            </div>
+          {/* All Menu Button */}
+          <div
+            className="flex items-center gap-1 px-3 py-1 cursor-pointer border border-transparent hover:border-white rounded transition mr-4"
+            onClick={() => setOpen(true)}
+          >
+            <BiMenuAltLeft size={22} color="white" />
+            <span className="text-white text-[14px] font-[600]">All</span>
           </div>
 
           {/* NavItems */}
@@ -252,80 +244,162 @@ const Header = ({ activeHeading }) => {
       {/* Mobile Sidebar */}
       {open ? (
         <div className="fixed w-full bg-[#0000005f] z-20 h-full top-0 left-0">
-          <div className="fixed w-[75%] bg-white h-screen top-0 left-0 z-10 overflow-y-scroll">
-            <div className="w-full justify-between flex pr-3 items-center p-4 bg-[#131921]">
-              <Link to="/" className="flex items-center gap-1">
-                <span className="text-[20px] font-[700] text-white font-Poppins">
-                  amazon
+          {/* Overlay close */}
+          <div
+            className="absolute w-full h-full"
+            onClick={() => setOpen(false)}
+          ></div>
+
+          {/* Sidebar Panel */}
+          <div className="fixed w-[80%] max-w-[365px] bg-white h-screen top-0 left-0 z-30 overflow-y-auto shadow-2xl">
+            {/* Header - User greeting */}
+            <div className="w-full flex items-center justify-between px-5 py-4 bg-[#232f3e]">
+              <div className="flex items-center gap-3">
+                <div className="w-[32px] h-[32px] rounded-full bg-[#37475a] flex items-center justify-center">
+                  {isAuthenticated && user?.avatar ? (
+                    <img
+                      src={
+                        user.avatar.startsWith("http")
+                          ? user.avatar
+                          : `${backend_url}${user.avatar}`
+                      }
+                      alt=""
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <CgProfile size={22} color="white" />
+                  )}
+                </div>
+                <span className="text-[16px] font-[700] text-white">
+                  Hello, {isAuthenticated ? user?.name?.split(" ")[0] : "Sign in"}
                 </span>
-              </Link>
+              </div>
               <RxCross1
-                size={25}
-                className="cursor-pointer text-white"
+                size={22}
+                className="cursor-pointer text-white hover:text-[#ff9900] transition"
                 onClick={() => setOpen(false)}
               />
             </div>
 
-            {/* Mobile Search */}
-            <div className="my-4 w-[92%] m-auto">
-              <input
-                type="search"
-                placeholder="Search products..."
-                className="h-[40px] w-full px-3 border-2 border-[#ff9900] rounded-md text-sm"
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
-              {searchData && searchData.length !== 0 && (
-                <div className="absolute bg-white z-10 shadow w-full left-0 p-3">
-                  {searchData.map((i, index) => (
-                    <Link to={`/product/${i._id}`} key={index}>
-                      <div className="flex items-center py-2">
-                        <img
-                          src={`${backend_url}${i.images[0]}`}
-                          alt=""
-                          className="w-[40px] mr-2 object-contain"
-                        />
-                        <h5 className="text-sm">{i.name}</h5>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
+            {/* Trending Section */}
+            <div className="border-b border-gray-200">
+              <h3 className="text-[16px] font-[700] text-[#111] px-5 pt-4 pb-2">
+                Trending
+              </h3>
+              <Link
+                to="/best-selling"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between px-5 py-3 hover:bg-[#f7f7f7] transition"
+              >
+                <span className="text-[14px] text-[#111]">Bestsellers</span>
+                <IoIosArrowForward size={16} color="#999" />
+              </Link>
+              <Link
+                to="/products"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between px-5 py-3 hover:bg-[#f7f7f7] transition"
+              >
+                <span className="text-[14px] text-[#111]">New Releases</span>
+                <IoIosArrowForward size={16} color="#999" />
+              </Link>
             </div>
 
-            <Navbar active={activeHeading} />
-
-            <div className="px-4 mt-4">
-              <div className="bg-[#ff9900] px-4 py-3 rounded-md text-center">
-                <Link to={`${isSeller ? "/dashboard" : "/shop-create"}`}>
-                  <h1 className="text-[#131921] font-[600] text-[14px] flex items-center justify-center">
-                    {isSeller ? "Go Dashboard" : "Become Seller"}{" "}
-                    <IoIosArrowForward className="ml-1" />
-                  </h1>
-                </Link>
-              </div>
+            {/* Second Life Section */}
+            <div className="border-b border-gray-200">
+              <h3 className="text-[16px] font-[700] text-[#111] px-5 pt-4 pb-2">
+                Second Life ♻️
+              </h3>
+              <Link
+                to="/refurbished"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between px-5 py-3 hover:bg-[#f7f7f7] transition"
+              >
+                <span className="text-[14px] text-[#111]">Certified Refurbished</span>
+                <IoIosArrowForward size={16} color="#999" />
+              </Link>
+              <Link
+                to="/return-portal"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between px-5 py-3 hover:bg-[#f7f7f7] transition"
+              >
+                <span className="text-[14px] text-[#111]">AI Return Portal</span>
+                <IoIosArrowForward size={16} color="#999" />
+              </Link>
+              <Link
+                to="/green-credits"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between px-5 py-3 hover:bg-[#f7f7f7] transition"
+              >
+                <span className="text-[14px] text-[#111]">Green Credits 🌱</span>
+                <IoIosArrowForward size={16} color="#999" />
+              </Link>
             </div>
 
-            <div className="flex w-full justify-center mt-8">
+            {/* Shop by Category */}
+            <div className="border-b border-gray-200">
+              <h3 className="text-[16px] font-[700] text-[#111] px-5 pt-4 pb-2">
+                Shop by Category
+              </h3>
+              {categoriesData &&
+                categoriesData.map((category) => (
+                  <Link
+                    key={category.id}
+                    to={`/products?category=${category.title}`}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-between px-5 py-3 hover:bg-[#f7f7f7] transition"
+                  >
+                    <span className="text-[14px] text-[#111]">{category.title}</span>
+                    <IoIosArrowForward size={16} color="#999" />
+                  </Link>
+                ))}
+            </div>
+
+            {/* Help & Settings */}
+            <div className="border-b border-gray-200">
+              <h3 className="text-[16px] font-[700] text-[#111] px-5 pt-4 pb-2">
+                Help & Settings
+              </h3>
               {isAuthenticated ? (
-                <Link to="/profile">
-                  <img
-                    src={`${backend_url}${user.avatar}`}
-                    alt=""
-                    className="w-[50px] h-[50px] rounded-full border-2 border-[#ff9900]"
-                  />
+                <Link
+                  to="/profile"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-between px-5 py-3 hover:bg-[#f7f7f7] transition"
+                >
+                  <span className="text-[14px] text-[#111]">Your Account</span>
+                  <IoIosArrowForward size={16} color="#999" />
                 </Link>
               ) : (
-                <div className="flex gap-4">
-                  <Link to="/login" className="text-[16px] text-[#131921] font-medium">
-                    Login
-                  </Link>
-                  <Link to="/sign-up" className="text-[16px] text-[#ff9900] font-medium">
-                    Sign up
-                  </Link>
-                </div>
+                <Link
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-between px-5 py-3 hover:bg-[#f7f7f7] transition"
+                >
+                  <span className="text-[14px] text-[#111]">Sign In</span>
+                  <IoIosArrowForward size={16} color="#999" />
+                </Link>
               )}
+              <Link
+                to="/faq"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between px-5 py-3 hover:bg-[#f7f7f7] transition"
+              >
+                <span className="text-[14px] text-[#111]">FAQ</span>
+                <IoIosArrowForward size={16} color="#999" />
+              </Link>
+              <Link
+                to={`${isSeller ? "/dashboard" : "/shop-create"}`}
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between px-5 py-3 hover:bg-[#f7f7f7] transition"
+              >
+                <span className="text-[14px] text-[#111]">
+                  {isSeller ? "Seller Dashboard" : "Become a Seller"}
+                </span>
+                <IoIosArrowForward size={16} color="#999" />
+              </Link>
             </div>
+
+            {/* Bottom padding */}
+            <div className="h-[60px]"></div>
           </div>
         </div>
       ) : null}

@@ -17,12 +17,12 @@ export const navItems = [
     url: "/return-portal",
   },
   {
-    title: "Green Credits 🌱",
-    url: "/green-credits",
+    title: "P2P Market 🤝",
+    url: "/p2p-marketplace",
   },
   {
-    title: "FAQ",
-    url: "/faq",
+    title: "Green Credits 🌱",
+    url: "/green-credits",
   },
 ];
 

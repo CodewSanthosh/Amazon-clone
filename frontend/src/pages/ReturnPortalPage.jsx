@@ -5,6 +5,7 @@ import styles from "../styles/styles";
 import { server } from "../server";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const ReturnPortalPage = () => {
   const [step, setStep] = useState(1);
@@ -16,6 +17,8 @@ const ReturnPortalPage = () => {
   const [productName, setProductName] = useState("");
   const [returnReason, setReturnReason] = useState("");
   const [productCategory, setProductCategory] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   const { user, isAuthenticated } = useSelector((state) => state.user);
 
@@ -345,11 +348,48 @@ const ReturnPortalPage = () => {
                 </div>
 
                 {/* Action buttons */}
-                <button className="w-full bg-[#ff9900] hover:bg-[#e68a00] text-[#131921] font-semibold py-3 rounded-md text-[14px] transition">
-                  Confirm Return ✓
-                </button>
+                {confirmed ? (
+                  <div className="w-full bg-[#e8f5e9] border border-[#4caf50] rounded-md py-4 px-5 text-center">
+                    <span className="text-[20px]">✅</span>
+                    <p className="text-[15px] font-[600] text-[#2e7d32] mt-1">Return Confirmed!</p>
+                    <p className="text-[12px] text-[#555] mt-1">
+                      Your product will be routed to: <strong>{result.decision}</strong>
+                    </p>
+                    <p className="text-[12px] text-[#4caf50] mt-1">
+                      +{result.greenCreditsEarned} Green Credits added to your account 🌱
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      setConfirming(true);
+                      try {
+                        // Award green credits
+                        if (isAuthenticated && user) {
+                          await axios.post(`${server}/green-credits/earn`, {
+                            userId: user._id,
+                            amount: result.greenCreditsEarned,
+                            action: "return_graded",
+                            description: `Return graded: ${productName || "Product"} → ${result.decision}`,
+                            co2Saved: result.co2Saved?.replace(" kg", "") || "1.0",
+                          });
+                        }
+                        toast.success("Return confirmed! Green Credits have been awarded 🌱");
+                        setConfirmed(true);
+                      } catch (err) {
+                        toast.error("Failed to confirm return");
+                      } finally {
+                        setConfirming(false);
+                      }
+                    }}
+                    disabled={confirming}
+                    className="w-full bg-[#ff9900] hover:bg-[#e68a00] text-[#131921] font-semibold py-3 rounded-md text-[14px] transition disabled:opacity-50"
+                  >
+                    {confirming ? "Confirming..." : "Confirm Return ✓"}
+                  </button>
+                )}
                 <button
-                  onClick={() => { setStep(1); setSelectedImage(null); setImageFile(null); setResult(null); setError(null); }}
+                  onClick={() => { setStep(1); setSelectedImage(null); setImageFile(null); setResult(null); setError(null); setConfirmed(false); }}
                   className="w-full mt-2 border border-gray-300 text-gray-600 py-3 rounded-md text-[14px] hover:bg-gray-50 transition"
                 >
                   Try Another Product

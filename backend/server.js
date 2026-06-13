@@ -68,8 +68,16 @@ const message = require("./controller/message");
 const conversation = require("./controller/conversation");
 const withdraw = require("./controller/withdraw");
 const ai = require("./controller/ai");
+const greenCredits = require("./controller/greenCredits");
+const refurbished = require("./controller/refurbished");
+const seed = require("./controller/seed");
+const p2p = require("./controller/p2p");
 app.use("/api/v2/withdraw", withdraw);
 app.use("/api/v2/ai", ai);
+app.use("/api/v2/green-credits", greenCredits);
+app.use("/api/v2/refurbished", refurbished);
+app.use("/api/v2/seed", seed);
+app.use("/api/v2/p2p", p2p);
 
 // end points
 app.use("/api/v2/user", user);

@@ -17,6 +17,7 @@ import {
 import { addTocart } from "../../redux/actions/cart";
 import { toast } from "react-toastify";
 import Ratings from "./Ratings";
+import ReturnPrevention from "./ReturnPrevention";
 import axios from "axios";
 
 const ProductDetails = ({ data }) => {
@@ -125,22 +126,33 @@ const ProductDetails = ({ data }) => {
             <div className="block w-full 800px:flex">
               <div className="w-full 800px:w-[50%]">
                 <img
-                  src={`${backend_url}${data && data.images[select]}`}
-                  alt=""
+                  src={
+                    data && data.images && data.images[select]
+                      ? data.images[select].startsWith("http")
+                        ? data.images[select]
+                        : `${backend_url}${data.images[select]}`
+                      : "https://via.placeholder.com/400"
+                  }
+                  alt={data.name}
                   className="w-[80%]"
                 />
                 <div className="w-full flex">
                   {data &&
                     data.images.map((i, index) => (
                       <div
+                        key={index}
                         className={`${
-                          select === 0 ? "border" : "null"
-                        } cursor-pointer`}
+                          select === index ? "border border-[#ff9900]" : "border border-transparent"
+                        } cursor-pointer rounded`}
                       >
                         <img
-                          src={`${backend_url}${i}`}
-                          alt=""
-                          className="h-[200px] overflow-hidden mr-3 mt-3"
+                          src={
+                            i.startsWith("http")
+                              ? i
+                              : `${backend_url}${i}`
+                          }
+                          alt={`${data.name} ${index + 1}`}
+                          className="h-[100px] w-[100px] object-contain overflow-hidden mr-3 mt-3 p-1"
                           onClick={() => setSelect(index)}
                         />
                       </div>
@@ -221,6 +233,14 @@ const ProductDetails = ({ data }) => {
                     Add to Cart <AiOutlineShoppingCart className="ml-1" />
                   </span>
                 </div>
+
+                {/* Return Prevention AI Banner */}
+                <ReturnPrevention
+                  productName={data.name}
+                  productCategory={data.category}
+                  productPrice={data.discountPrice}
+                  productDescription={data.description}
+                />
                 <div className="flex items-center pt-8">
                   <Link to={`/shop/preview/${data?.shop._id}`}>
                     <img

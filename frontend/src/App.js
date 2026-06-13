@@ -26,6 +26,7 @@ import {
 import RefurbishedPage from "./pages/RefurbishedPage";
 import ReturnPortalPage from "./pages/ReturnPortalPage";
 import GreenCreditsPage from "./pages/GreenCreditsPage";
+import P2PMarketplacePage from "./pages/P2PMarketplacePage";
 import {
   ShopDashboardPage,
   ShopCreateProduct,
@@ -120,6 +121,7 @@ const App = () => {
         <Route path="/refurbished" element={<RefurbishedPage />} />
         <Route path="/return-portal" element={<ReturnPortalPage />} />
         <Route path="/green-credits" element={<GreenCreditsPage />} />
+        <Route path="/p2p-marketplace" element={<P2PMarketplacePage />} />
         <Route
           path="/checkout"
           element={

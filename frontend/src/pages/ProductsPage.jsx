@@ -31,7 +31,7 @@ const ProductsPage = () => {
         <Loader />
       ) : (
         <div>
-          <Header activeHeading={3} />
+          <Header activeHeading={2} />
           <br />
           <br />
           <div className={`${styles.section}`}>

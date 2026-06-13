@@ -1,152 +1,166 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import styles from "../../../styles/styles";
 import {
-    AiFillHeart,
-    AiFillStar,
-    AiOutlineEye,
-    AiOutlineHeart,
-    AiOutlineShoppingCart,
-    AiOutlineStar,
+  AiFillHeart,
+  AiOutlineHeart,
+  AiOutlineShoppingCart,
 } from "react-icons/ai";
 import { backend_url } from "../../../server";
-import ProductDetailsCard from "../ProductDetailsCard/ProductDetailsCard.jsx";
-import { useDispatch, useSelector } from 'react-redux'
-import { addToWishlist, removeFromWishlist } from '../../../redux/actions/wishlist';
-import { addTocart } from '../../../redux/actions/cart';
-import { toast } from 'react-toastify';
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../../../redux/actions/wishlist";
+import { addTocart } from "../../../redux/actions/cart";
+import { toast } from "react-toastify";
 import Ratings from "../../Products/Ratings";
 
 const ProductCard = ({ data, isEvent }) => {
-    const { wishlist } = useSelector((state) => state.wishlist);
-    const { cart } = useSelector((state) => state.cart);
-    const [click, setClick] = useState(false);
-    const [open, setOpen] = useState(false);
-    const dispatch = useDispatch();
+  const { wishlist } = useSelector((state) => state.wishlist);
+  const { cart } = useSelector((state) => state.cart);
+  const [click, setClick] = useState(false);
+  const dispatch = useDispatch();
 
-
-
-    useEffect(() => {
-        if (wishlist && wishlist.find((i) => i._id === data._id)) {
-            setClick(true);
-        } else {
-            setClick(false);
-        }
-    }, [wishlist]);
-
-    // Remove from wish list 
-    const removeFromWishlistHandler = (data) => {
-        setClick(!click);
-        dispatch(removeFromWishlist(data));
+  useEffect(() => {
+    if (wishlist && wishlist.find((i) => i._id === data._id)) {
+      setClick(true);
+    } else {
+      setClick(false);
     }
+  }, [wishlist, data._id]);
 
-    // add to wish list
-    const addToWishlistHandler = (data) => {
-        setClick(!click);
-        dispatch(addToWishlist(data))
+  const removeFromWishlistHandler = (data) => {
+    setClick(false);
+    dispatch(removeFromWishlist(data));
+  };
+
+  const addToWishlistHandler = (data) => {
+    setClick(true);
+    dispatch(addToWishlist(data));
+  };
+
+  const addToCartHandler = (id) => {
+    const isItemExists = cart && cart.find((i) => i._id === id);
+    if (isItemExists) {
+      toast.error("Item already in cart!");
+    } else {
+      if (data.stock < 1) {
+        toast.error("Product stock limited!");
+      } else {
+        const cartData = { ...data, qty: 1 };
+        dispatch(addTocart(cartData));
+        toast.success("Item added to cart!");
+      }
     }
+  };
 
-    // Add to cart
-    const addToCartHandler = (id) => {
-        const isItemExists = cart && cart.find((i) => i._id === id);
+  const discount = data.originalPrice
+    ? Math.round(((data.originalPrice - data.discountPrice) / data.originalPrice) * 100)
+    : 0;
 
-        if (isItemExists) {
-            toast.error("item already in cart!")
-        } else {
-            if (data.stock < 1) {
-                toast.error("Product stock limited!");
-            } else {
-                const cartData = { ...data, qty: 1 };
-                dispatch(addTocart(cartData));
-                toast.success("Item added to cart Successfully!")
+  const productLink = isEvent
+    ? `/product/${data._id}?isEvent=true`
+    : `/product/${data._id}`;
+
+  return (
+    <div className="w-full bg-white border border-[#e7e7e7] rounded-md overflow-hidden hover:shadow-md transition-all duration-200 group relative">
+      {/* Wishlist Icon */}
+      <div className="absolute top-2 right-2 z-10">
+        {click ? (
+          <AiFillHeart
+            size={20}
+            className="cursor-pointer"
+            onClick={() => removeFromWishlistHandler(data)}
+            color="#e53935"
+            title="Remove from wishlist"
+          />
+        ) : (
+          <AiOutlineHeart
+            size={20}
+            className="cursor-pointer text-gray-400 hover:text-[#e53935] transition"
+            onClick={() => addToWishlistHandler(data)}
+            title="Add to wishlist"
+          />
+        )}
+      </div>
+
+      {/* Discount Badge */}
+      {discount > 0 && (
+        <div className="absolute top-2 left-2 z-10 bg-[#cc0c39] text-white text-[11px] font-[700] px-2 py-0.5 rounded-sm">
+          {discount}% off
+        </div>
+      )}
+
+      {/* Image */}
+      <Link to={productLink}>
+        <div className="w-full h-[200px] flex items-center justify-center p-4 bg-white">
+          <img
+            src={
+              data.images && data.images[0]
+                ? data.images[0].startsWith("http")
+                  ? data.images[0]
+                  : `${backend_url}${data.images[0]}`
+                : "https://via.placeholder.com/200"
             }
-        }
-    }
+            alt={data.name}
+            className="max-h-[180px] max-w-full object-contain group-hover:scale-105 transition-transform duration-200"
+          />
+        </div>
+      </Link>
 
+      {/* Content */}
+      <div className="px-3 pb-3 pt-2 border-t border-[#f0f0f0]">
+        {/* Title */}
+        <Link to={productLink}>
+          <h4 className="text-[13px] text-[#0f1111] leading-[1.4] font-[400] hover:text-[#c45500] transition line-clamp-2 mb-1">
+            {data.name}
+          </h4>
+        </Link>
 
-    return (
-        <>
-            <div className='w-full h-[370px] bg-white rounded-lg shadow-sm p-3 relative cursor-pointer'>
-                <div className='flex justify-end'>
-                </div>
+        {/* Ratings */}
+        <div className="flex items-center gap-1 mb-1">
+          <Ratings rating={data?.ratings} />
+          <span className="text-[11px] text-[#007185]">
+            ({data?.sold_out || 0})
+          </span>
+        </div>
 
-                <Link to={`${isEvent === true ? `/product/${data._id}?isEvent=true` : `/product/${data._id}`}`}>
-                    <img
-                        src={`${backend_url}${data.images && data.images[0]}`}
-                        alt="prd"
-                        className='w-full h-[170px] object-contain'
-                    />
-                </Link>
-                <Link to={`${isEvent === true ? `/product/${data._id}?isEvent=true` : `/product/${data._id}`}`}>
-                    <h5 className={`${styles.shop_name}`} >{data.shop.name}</h5>
-                </Link>
-                <Link to={`/product/${data._id}`}>
-                    <h4 className='pb-3 font-[500]'>
-                        {data.name.length > 40 ? data.name.slice(0, 40) + '...' : data.name}
-                    </h4>
-                    {/* Star Rating */}
-                    <div className='flex'>
-                        <Ratings rating={data?.ratings} />
-                    </div>
-
-                    <div className='py-2 flex items-center justify-between'>
-                        <div className='flex'>
-                            <h5 className={`${styles.productDiscountPrice}`}>
-                                {data.originalPrice === 0 ? data.originalPrice : data.discountPrice}$
-                            </h5>
-
-                            <h4 className={`${styles.price}`}>
-                                {data.originalPrice ? data.originalPrice + " $" : null}
-                            </h4>
-                        </div>
-
-                        <span className="font-[400] text-[17px] text-[#68d284]">
-                            {data?.sold_out} sold
-                        </span>
-                    </div>
-                </Link>
-
-                {/* side option */}
-                <div>
-                    {
-                        click ? (
-                            <AiFillHeart
-                                size={22}
-                                className="cursor-pointer absolute right-2 top-5"
-                                onClick={() => removeFromWishlistHandler(data)}
-                                color={click ? "red" : "#333"}
-                                title='Remove from wishlist'
-                            />
-                        ) : (
-                            <AiOutlineHeart
-                                size={22}
-                                className="cursor-pointer absolute right-2 top-5"
-                                onClick={() => addToWishlistHandler(data)}
-                                color={click ? "red" : "#333"}
-                                title='Add to wishlist'
-
-                            />
-                        )}
-                    <AiOutlineEye
-                        size={22}
-                        className="cursor-pointer absolute right-2 top-14"
-                        onClick={() => setOpen(!open)}
-                        color="#333"
-                        title='Quick view'
-                    />
-
-                    <AiOutlineShoppingCart
-                        size={25}
-                        className="cursor-pointer absolute right-2 top-24"
-                        onClick={() => addToCartHandler(data._id)}
-                        color="#444"
-                        title='Add to cart'
-                    />
-                    {open ? <ProductDetailsCard setOpen={setOpen} data={data} /> : null}
-                </div>
+        {/* Price */}
+        <div className="mb-1">
+          <div className="flex items-baseline gap-1">
+            <span className="text-[11px] text-[#0f1111]">₹</span>
+            <span className="text-[20px] font-[500] text-[#0f1111]">
+              {data.discountPrice?.toLocaleString()}
+            </span>
+          </div>
+          {data.originalPrice > 0 && data.originalPrice !== data.discountPrice && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[12px] text-[#565959] line-through">
+                M.R.P: ₹{data.originalPrice?.toLocaleString()}
+              </span>
+              <span className="text-[12px] text-[#cc0c39] font-[500]">
+                ({discount}% off)
+              </span>
             </div>
-        </>
-    )
-}
+          )}
+        </div>
 
-export default ProductCard
+        {/* Delivery */}
+        <p className="text-[12px] text-[#565959] mb-2">
+          FREE delivery by <span className="font-[500] text-[#0f1111]">Tomorrow</span>
+        </p>
+
+        {/* Add to Cart */}
+        <button
+          onClick={() => addToCartHandler(data._id)}
+          className="w-full h-[30px] bg-gradient-to-b from-[#f7dfa5] to-[#f0c14b] border border-[#a88734] rounded-[20px] text-[12px] font-[400] text-[#0f1111] cursor-pointer hover:from-[#f5d78e] hover:to-[#eeb933] transition flex items-center justify-center gap-1"
+        >
+          <AiOutlineShoppingCart size={14} />
+          Add to Cart
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ProductCard;
