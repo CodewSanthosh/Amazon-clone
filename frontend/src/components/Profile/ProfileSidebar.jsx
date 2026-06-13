@@ -46,15 +46,21 @@ const ProfileSidebar = ({ active, setActive }) => {
       {/* Profile Header */}
       <div className="p-4 border-b border-[#e7e7e7] bg-[#f7f7f7]">
         <div className="flex items-center gap-3">
-          <img
-            src={
-              user?.avatar?.startsWith("http")
-                ? user.avatar
-                : `${backend_url}${user?.avatar}`
-            }
-            alt=""
-            className="w-[40px] h-[40px] rounded-full object-cover border-2 border-[#ff9900]"
-          />
+          {user?.avatar && user.avatar !== "default-avatar.png" ? (
+            <img
+              src={
+                user.avatar.startsWith("http")
+                  ? user.avatar
+                  : `${backend_url}${user?.avatar}`
+              }
+              alt=""
+              className="w-[40px] h-[40px] rounded-full object-cover border-2 border-[#ff9900]"
+            />
+          ) : (
+            <div className="w-[40px] h-[40px] rounded-full bg-[#232f3e] flex items-center justify-center border-2 border-[#ff9900]">
+              <span className="text-white text-[16px] font-[600]">{user?.name?.[0]?.toUpperCase()}</span>
+            </div>
+          )}
           <div className="hidden 800px:block">
             <p className="text-[11px] text-[#555]">Hello,</p>
             <p className="text-[14px] font-[600] text-[#131921] truncate max-w-[120px]">

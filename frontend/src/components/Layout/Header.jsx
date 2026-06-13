@@ -193,11 +193,15 @@ const Header = ({ activeHeading }) => {
               <div className="relative cursor-pointer mr-[15px]">
                 {isAuthenticated ? (
                   <Link to="/profile">
-                    <img
-                      src={`${backend_url}${user.avatar}`}
-                      className="w-[32px] h-[32px] rounded-full border-2 border-[#ff9900]"
-                      alt=""
-                    />
+                    {user?.avatar && user.avatar !== "default-avatar.png" ? (
+                      <img
+                        src={user.avatar.startsWith("http") ? user.avatar : `${backend_url}${user.avatar}`}
+                        className="w-[32px] h-[32px] rounded-full border-2 border-[#ff9900] object-cover"
+                        alt=""
+                      />
+                    ) : (
+                      <CgProfile size={26} color="rgb(255 255 255 / 83%)" />
+                    )}
                   </Link>
                 ) : (
                   <Link to="/login">
