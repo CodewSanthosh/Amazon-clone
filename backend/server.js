@@ -38,6 +38,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
+      "https://amazon-clone-five-green-98.vercel.app",
+      "https://amazon-clone-8ce7.onrender.com",
       process.env.FRONTEND_URL || "http://localhost:3000",
     ],
     credentials: true,
