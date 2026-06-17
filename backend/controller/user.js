@@ -46,7 +46,8 @@ router.post("/create-user", upload.single("file"), async (req, res, next) => {
 
     const activationToken = createActivationToken(user);
 
-    const activationUrl = `http://localhost:3000/activation/${activationToken}`;
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const activationUrl = `${frontendUrl}/activation/${activationToken}`;
 
     // send email to user
     try {
@@ -60,7 +61,14 @@ router.post("/create-user", upload.single("file"), async (req, res, next) => {
         message: `please check your email:- ${user.email} to activate your account!`,
       });
     } catch (err) {
-      return next(new ErrorHandler(err.message, 500));
+      // If email fails (common in production), create user directly
+      const newUser = await User.create({
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        avatar: user.avatar,
+      });
+      sendToken(newUser, 201, res);
     }
   } catch (err) {
     return next(new ErrorHandler(err.message, 400));

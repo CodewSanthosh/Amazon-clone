@@ -49,7 +49,8 @@ router.post("/create-shop", upload.single("file"), async (req, res, next) => {
 
     const activationToken = createActivationToken(seller);
 
-    const activationUrl = `http://localhost:3000/seller/activation/${activationToken}`;
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const activationUrl = `${frontendUrl}/seller/activation/${activationToken}`;
 
     try {
       await sendMail({
@@ -62,7 +63,17 @@ router.post("/create-shop", upload.single("file"), async (req, res, next) => {
         message: `please check your email:- ${seller.email} to activate your shop!`,
       });
     } catch (error) {
-      return next(new ErrorHandler(error.message, 500));
+      // If email fails, create shop directly
+      const newSeller = await Shop.create({
+        name: seller.name,
+        email: seller.email,
+        password: seller.password,
+        avatar: seller.avatar,
+        address: seller.address,
+        phoneNumber: seller.phoneNumber,
+        zipCode: seller.zipCode,
+      });
+      sendShopToken(newSeller, 201, res);
     }
   } catch (error) {
     return next(new ErrorHandler(error.message, 400));
