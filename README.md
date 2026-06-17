@@ -185,13 +185,6 @@ npm start
 
 ---
 
-## 👥 Team
-
-| Member | Role |
-|--------|------|
-| Surendiran | Full Stack + AI Integration |
-
----
 
 ## 📄 License
 
